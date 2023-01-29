@@ -1,0 +1,15 @@
+====== 1/29/2023 2:08:34 PM ======
+Message: Object reference not set to an instance of an object. -- 
+Stack Trace:    at easyCheckBalance.Core.Responder.ProcessAsync(String msisdn, String text) in G:\eDahabProjects\easyCheckBalance\easyCheckBalance\Core\Responder.cs:line 67
+   at easyCheckBalance.Worker.ProcessAsync(SmppClient client, TextMessage message) in G:\eDahabProjects\easyCheckBalance\easyCheckBalance\Worker.cs:line 101
+=======================
+====== 1/29/2023 2:09:01 PM ======
+Message: Object reference not set to an instance of an object. -- 
+Stack Trace:    at easyCheckBalance.Core.Responder.ProcessAsync(String msisdn, String text) in G:\eDahabProjects\easyCheckBalance\easyCheckBalance\Core\Responder.cs:line 67
+   at easyCheckBalance.Worker.ProcessAsync(SmppClient client, TextMessage message) in G:\eDahabProjects\easyCheckBalance\easyCheckBalance\Worker.cs:line 101
+=======================
+====== 1/29/2023 2:11:08 PM ======
+Message: Object reference not set to an instance of an object. -- 
+Stack Trace:    at easyCheckBalance.Core.Responder.ProcessAsync(String msisdn, String text) in G:\eDahabProjects\easyCheckBalance\easyCheckBalance\Core\Responder.cs:line 67
+   at easyCheckBalance.Worker.ProcessAsync(SmppClient client, TextMessage message) in G:\eDahabProjects\easyCheckBalance\easyCheckBalance\Worker.cs:line 101
+=======================

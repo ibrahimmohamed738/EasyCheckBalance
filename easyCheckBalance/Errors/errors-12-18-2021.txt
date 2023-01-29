@@ -1,0 +1,14 @@
+====== 12/18/2021 5:39:32 PM ======
+Message: OracleConnection.ConnectionString is invalid -- 
+Stack Trace:    at Oracle.ManagedDataAccess.Client.OracleConnection.Open()
+   at easyCheckBalance.Core.Repository.CheckMobiquityMPin(String MSISDN, String subscriberPin) in G:\eDahabProjects\easyCheckBalance\easyCheckBalance\Core\Repository.cs:line 57
+   at easyCheckBalance.Core.Responder.ProcessAsync(String msisdn, String text) in G:\eDahabProjects\easyCheckBalance\easyCheckBalance\Core\Responder.cs:line 59
+   at easyCheckBalance.Worker.ProcessAsync(SmppClient client, TextMessage message) in G:\eDahabProjects\easyCheckBalance\easyCheckBalance\Worker.cs:line 94
+=======================
+====== 12/18/2021 5:40:56 PM ======
+Message: OracleConnection.ConnectionString is invalid -- 
+Stack Trace:    at Oracle.ManagedDataAccess.Client.OracleConnection.Open()
+   at easyCheckBalance.Core.Repository.CheckMobiquityMPin(String MSISDN, String subscriberPin) in G:\eDahabProjects\easyCheckBalance\easyCheckBalance\Core\Repository.cs:line 57
+   at easyCheckBalance.Core.Responder.ProcessAsync(String msisdn, String text) in G:\eDahabProjects\easyCheckBalance\easyCheckBalance\Core\Responder.cs:line 59
+   at easyCheckBalance.Worker.ProcessAsync(SmppClient client, TextMessage message) in G:\eDahabProjects\easyCheckBalance\easyCheckBalance\Worker.cs:line 94
+=======================
