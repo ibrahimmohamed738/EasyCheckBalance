@@ -2,6 +2,8 @@
 //  Copyright © eDahab. All rights reserved.
 //  ---------------------------------------------------------------------------------
 
+using easyCheckBalance.Models;
+
 namespace easyCheckBalance
 {
     public class Config
@@ -20,5 +22,8 @@ namespace easyCheckBalance
 
         public bool IsLimited { get; set; }
         public string EDahabApiUrl { get; set; }
+        public string BalanceApiUrl { get; set; }
+
+        public ApiAuthConfig ApiAuth { get; set; }
     }
 }

@@ -2,7 +2,6 @@
 //  Copyright © eDahab. All rights reserved.
 //  ---------------------------------------------------------------------------------
 
-using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 
 namespace easyCheckBalance.Core
@@ -31,7 +30,7 @@ namespace easyCheckBalance.Core
         public async Task<Response> ProcessAsync(string msisdn, string text)
         {
             await Task.CompletedTask;
-           
+
             string[] stringSeparators = new string[] { "*", "#" };
             string[] result = text.Split(stringSeparators, StringSplitOptions.RemoveEmptyEntries);
             if (result.Length == 2 && result[1] == "1")
@@ -49,11 +48,11 @@ namespace easyCheckBalance.Core
 
                 if (!_session.EdahabUser.IsBarred.Equals("No", StringComparison.OrdinalIgnoreCase) || _session.EdahabUser.Status.Equals("S", StringComparison.OrdinalIgnoreCase))
                 {
-                    return await Task.Run(() => GetResponse(_session.MSISDN, ResponseType.Notification, "Your mobile number is barred or suspended.\nPlease contact customer care 800 or 300303"));
+                    return await Task.Run(() => GetResponse(_session.MSISDN, ResponseType.Notification, "Your mobile number is barred or suspended.\nPlease contact customer care 333 or 111"));
                 }
 
                 _session.CurrentMenu = "100";
-                    return GetResponse(msisdn, ResponseType.Prompt, EnterPin);
+                return GetResponse(msisdn, ResponseType.Prompt, EnterPin);
             }
             _session = _repository.GetSession(msisdn);
 
@@ -63,23 +62,26 @@ namespace easyCheckBalance.Core
             }
             if (_session.CurrentMenu == "100")
             {
-                var balanceResponse = await _dahab.GetBalance(_session.MSISDN,text);
+                var balanceResponse = await _dahab.GetBalanceNew(_session.MSISDN, text);
                 if (balanceResponse.Success)
                 {
-
-                    if(_session.MSISDN.StartsWith("65"))
-                       return GetResponse(msisdn, ResponseType.Notification, BalanceMsg + $"Dollar: ${balanceResponse.Data.USDBalance:N2}\nShillings: Shl {balanceResponse.Data.SLSBalance:N0}\n{AdsMessage}");
+                    if (_session.MSISDN.StartsWith("65"))
+                        return GetResponse(msisdn, ResponseType.Notification,
+                            BalanceMsg + $"Dollar: ${balanceResponse.Data.Dollar.Balance:N2}\nShillings: Shl {balanceResponse.Data.Shl.Balance:N0}\n{AdsMessage}");
                     else
-                       return GetResponse(msisdn, ResponseType.Notification, BalanceMsg + $"Dollar: ${balanceResponse.Data.USDBalance:N2}\n{AdsMessagePL}");
+                        return GetResponse(msisdn, ResponseType.Notification,
+                            BalanceMsg + $"Dollar: ${balanceResponse.Data.Dollar.Balance:N2}\n{AdsMessagePL}");
                 }
                 else
-                  return GetResponse(msisdn, ResponseType.Notification, balanceResponse.Message);
+                {
+                    return GetResponse(msisdn, ResponseType.Notification, balanceResponse.Message);
+                }
             }
             else
             {
                 return GetResponse(msisdn, ResponseType.Notification, WrongInput);
             }
-                
+
         }
 
         private Response GetResponse(string msisdn, ResponseType type, string message)

@@ -3,27 +3,28 @@ using easyCheckBalance.Core;
 using Serilog;
 
 
-IHost host = Host.CreateDefaultBuilder(args)
+var builder = Host.CreateApplicationBuilder(args);
+
+// Adding serilog 
+Log.Logger = new LoggerConfiguration()
+    .ReadFrom
+    .Configuration(builder.Configuration)
+    .CreateLogger();
+
+var host = Host.CreateDefaultBuilder(args)
+    .UseWindowsService(options =>
+    {
+        options.ServiceName = "Short Way Balance Check USSD App";
+    })
+    .UseSerilog()
     .ConfigureServices((hostContext, services) =>
     {
         services.AddHttpClient<DahabAPI>();
         services.AddTransient<Responder>();
         services.AddTransient<Repository>();
+        services.Configure<Config>(builder.Configuration.GetSection("Config"));
         services.AddHostedService<Worker>();
-        services.Configure<Config>(hostContext.Configuration.GetSection("Config"));
-    }).UseWindowsService().Build();
-try
-{
-    Log.Information("Starting up the Service. ");
-    await host.RunAsync();
-    return;
-}
-catch (Exception ex)
-{
-    Log.Fatal("Problem with Starting Service. " + ex.Message);
-    return;
-}
-finally
-{
-    Log.CloseAndFlush();
-}
+    })
+    .Build();
+
+host.Run();

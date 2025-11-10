@@ -1,14 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace easyCheckBalance.Models
+﻿namespace easyCheckBalance.Models
 {
     public class BalanceResponse
     {
-        public decimal USDBalance { get; set; }
-        public decimal SLSBalance { get; set; }
+        public decimal Balance { get; set; }
+        public string TxnStatus { get; set; } = string.Empty;
+        public string Message { get; set; } = string.Empty;
     }
 }
