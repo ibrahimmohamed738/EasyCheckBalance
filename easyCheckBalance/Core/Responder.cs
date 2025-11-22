@@ -2,6 +2,7 @@
 //  Copyright © eDahab. All rights reserved.
 //  ---------------------------------------------------------------------------------
 
+using easyCheckBalance.Models;
 using Microsoft.Extensions.Options;
 
 namespace easyCheckBalance.Core
@@ -62,7 +63,12 @@ namespace easyCheckBalance.Core
             }
             if (_session.CurrentMenu == "100")
             {
-                var balanceResponse = await _dahab.GetBalanceNew(_session.MSISDN, text);
+                var balanceResponse = new DahabResponse<CheckBalanceData>();
+                if (_session.EdahabUser.CategoryCode.Equals("SUBS", StringComparison.OrdinalIgnoreCase))
+                    balanceResponse = await _dahab.GetBalanceNew(_session.MSISDN, text);
+                else
+                    balanceResponse = await _dahab.GetChannelBalanceNew(_session.MSISDN, text);
+
                 if (balanceResponse.Success)
                 {
                     if (_session.MSISDN.StartsWith("65"))

@@ -263,5 +263,112 @@ namespace easyCheckBalance.Core
                 };
             }
         }
+
+
+        public async Task<DahabResponse<CheckBalanceData>> GetChannelBalanceNew(string msisdn, string pin, CancellationToken ct = default)
+        {
+            try
+            {
+                if (!await EnsureTokenAsync(ct))
+                {
+                    return new DahabResponse<CheckBalanceData>
+                    {
+                        Success = false,
+                        Message = "Cosdigani waa mid khaldan, Fadlan mar kale isku day codsi sax ah",
+                        Data = null
+                    };
+                }
+
+                _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _token);
+
+                var requestBody = new { msisdn, mPin = pin };
+                var content = new StringContent(JsonSerializer.Serialize(requestBody), Encoding.UTF8, "application/json");
+
+                var response = await _client.PostAsync($"{_config.BalanceApiUrl}/api/Dahab/check-balance-channel", content, ct);
+
+                // Retry once if unauthorized
+                if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                {
+                    _logger.LogWarning("Token expired or invalid, refreshing...");
+                    _token = null; // reset
+                    await EnsureTokenAsync(ct);
+                    _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _token);
+                    response = await _client.PostAsync($"{_config.BalanceApiUrl}/api/Dahab/check-balance-channel", content, ct);
+                }
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    _logger.LogError("Failed to fetch balance. Status Code: {StatusCode}", response.StatusCode);
+                    return new DahabResponse<CheckBalanceData>
+                    {
+                        Success = false,
+                        Message = "Cosdigani waa mid khaldan, Fadlan mar kale isku day codsi sax ah",
+                        Data = null
+                    };
+                }
+
+                var json = await response.Content.ReadAsStringAsync(ct);
+                var apiResponse = JsonSerializer.Deserialize<DahabResponse<CheckBalanceData>>(json, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                });
+
+                if (apiResponse?.Data == null)
+                {
+                    return new DahabResponse<CheckBalanceData>
+                    {
+                        Success = false,
+                        Message = "Cosdigani waa mid khaldan, Fadlan mar kale isku day codsi sax ah",
+                        Data = null
+                    };
+                }
+
+                var balanceData = new CheckBalanceData
+                {
+                    Dollar = apiResponse.Data.Dollar,
+                    Shl = apiResponse.Data.Shl
+                };
+
+                // ✅ Success only when both statuses == 200
+                bool success = balanceData.Dollar?.TxnStatus == "200" && balanceData.Shl?.TxnStatus == "200";
+
+                // ✅ Friendly error message selection
+                string finalMessage;
+
+                if (success)
+                {
+                    finalMessage = apiResponse.Message ?? "Balance fetched successfully.";
+                }
+                else if (balanceData != null && balanceData.Dollar.TxnStatus != "200" && !string.IsNullOrWhiteSpace(balanceData.Dollar.Message))
+                {
+                    finalMessage = balanceData.Dollar.Message;
+                }
+                else if (balanceData != null && balanceData.Shl.TxnStatus != "200" && !string.IsNullOrWhiteSpace(balanceData.Shl.Message))
+                {
+                    finalMessage = balanceData.Shl.Message;
+                }
+                else
+                {
+                    finalMessage = "Cosdigani waa mid khaldan, Fadlan mar kale isku day codsi sax ah";
+                }
+
+                return new DahabResponse<CheckBalanceData>
+                {
+                    Success = success,
+                    Message = finalMessage,
+                    Data = success ? balanceData : null
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error calling Dahab API.");
+                return new DahabResponse<CheckBalanceData>
+                {
+                    Success = false,
+                    Message = "Cosdigani waa mid khaldan, Fadlan mar kale isku day codsi sax ah",
+                    Data = null
+                };
+            }
+        }
     }
 }
