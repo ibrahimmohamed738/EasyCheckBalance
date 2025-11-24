@@ -73,10 +73,10 @@ namespace easyCheckBalance.Core
                 {
                     if (_session.MSISDN.StartsWith("65"))
                         return GetResponse(msisdn, ResponseType.Notification,
-                            BalanceMsg + $"Dollar: ${balanceResponse.Data.Dollar.Balance:N2}\nShillings: Shl {balanceResponse.Data.Shl.Balance:N0}\n{AdsMessage}");
+                            BalanceMsg + $"Dollar: ${balanceResponse.Data.Dollar.Balance + balanceResponse.Data.Dollar.FrBalance:N2}\nShillings: Shl {balanceResponse.Data.Shl.Balance + balanceResponse.Data.Shl.FrBalance:N0}\n{AdsMessage}");
                     else
                         return GetResponse(msisdn, ResponseType.Notification,
-                            BalanceMsg + $"Dollar: ${balanceResponse.Data.Dollar.Balance:N2}\n{AdsMessagePL}");
+                            BalanceMsg + $"Dollar: ${balanceResponse.Data.Dollar.Balance + balanceResponse.Data.Dollar.FrBalance:N2}\n{AdsMessagePL}");
                 }
                 else
                 {
