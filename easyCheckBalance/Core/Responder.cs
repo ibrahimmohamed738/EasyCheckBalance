@@ -2,7 +2,6 @@
 //  Copyright © eDahab. All rights reserved.
 //  ---------------------------------------------------------------------------------
 
-using easyCheckBalance.Models;
 using Microsoft.Extensions.Options;
 
 namespace easyCheckBalance.Core
@@ -40,17 +39,17 @@ namespace easyCheckBalance.Core
                 {
                     MSISDN = NormalizePhone(msisdn),
                     CurrentMenu = "0",
-                    EdahabUser = await _dahab.GetUserInfo(msisdn)
+                    //EdahabUser = await _dahab.GetUserInfo(msisdn)
                 };
-                if (_session.EdahabUser is null)
-                {
-                    return await Task.Run(() => GetResponse(_session.MSISDN, ResponseType.Notification, "This number is not register in eDahab."));
-                }
+                //if (_session.EdahabUser is null)
+                //{
+                //    return await Task.Run(() => GetResponse(_session.MSISDN, ResponseType.Notification, "This number is not register in eDahab."));
+                //}
 
-                if (!_session.EdahabUser.IsBarred.Equals("No", StringComparison.OrdinalIgnoreCase) || _session.EdahabUser.Status.Equals("S", StringComparison.OrdinalIgnoreCase))
-                {
-                    return await Task.Run(() => GetResponse(_session.MSISDN, ResponseType.Notification, "Your mobile number is barred or suspended.\nPlease contact customer care 333 or 111"));
-                }
+                //if (!_session.EdahabUser.IsBarred.Equals("No", StringComparison.OrdinalIgnoreCase) || _session.EdahabUser.Status.Equals("S", StringComparison.OrdinalIgnoreCase))
+                //{
+                //    return await Task.Run(() => GetResponse(_session.MSISDN, ResponseType.Notification, "Your mobile number is barred or suspended.\nPlease contact customer care 333 or 111"));
+                //}
 
                 _session.CurrentMenu = "100";
                 return GetResponse(msisdn, ResponseType.Prompt, EnterPin);
@@ -63,11 +62,7 @@ namespace easyCheckBalance.Core
             }
             if (_session.CurrentMenu == "100")
             {
-                var balanceResponse = new DahabResponse<CheckBalanceData>();
-                if (_session.EdahabUser.CategoryCode.Equals("SUBS", StringComparison.OrdinalIgnoreCase))
-                    balanceResponse = await _dahab.GetBalanceNew(_session.MSISDN, text);
-                else
-                    balanceResponse = await _dahab.GetChannelBalanceNew(_session.MSISDN, text);
+                var balanceResponse = await _dahab.GetBalancePayxNew(_session.MSISDN, text);
 
                 if (balanceResponse.Success)
                 {

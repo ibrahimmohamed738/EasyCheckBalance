@@ -370,5 +370,167 @@ namespace easyCheckBalance.Core
                 };
             }
         }
+
+
+        public async Task<DahabResponse<CheckBalanceData>> GetBalancePayxNew(string msisdn, string pin, CancellationToken ct = default)
+        {
+            try
+            {
+                var requestBody = new
+                {
+                    phone = msisdn,
+                    pin = pin
+                };
+
+                using var request = new HttpRequestMessage(
+                    HttpMethod.Post,
+                    $"{_config.PayxApiUrl}/edahab/balance-with-pin");
+
+                request.Headers.TryAddWithoutValidation(
+                    "X-API-KEY",
+                    _config.PayxApiKey);
+
+                request.Headers.TryAddWithoutValidation(
+                    "X-API-SECRET",
+                    _config.PayxApiSecret);
+
+                request.Content = new StringContent(
+                    JsonSerializer.Serialize(requestBody),
+                    Encoding.UTF8,
+                    "application/json");
+
+                var response = await _client.SendAsync(request, ct);
+
+                var json = await response.Content.ReadAsStringAsync(ct);
+
+                // Failed response
+                if (!response.IsSuccessStatusCode)
+                {
+                    string message =
+                        "Cosdigani waa mid khaldan, Fadlan mar kale isku day codsi sax ah";
+
+                    try
+                    {
+                        var errorResponse =
+                            JsonSerializer.Deserialize<BalanceErrorResponse>(
+                                json,
+                                new JsonSerializerOptions
+                                {
+                                    PropertyNameCaseInsensitive = true
+                                });
+
+                        if (!string.IsNullOrWhiteSpace(errorResponse?.Message))
+                        {
+                            message = errorResponse.Message;
+                        }
+                    }
+                    catch
+                    {
+                        // Keep default error message
+                    }
+
+                    _logger.LogWarning(
+                        "Balance request failed. MSISDN: {Msisdn}, StatusCode: {StatusCode}, Response: {Response}",
+                        msisdn,
+                        response.StatusCode,
+                        json);
+
+                    return new DahabResponse<CheckBalanceData>
+                    {
+                        Success = false,
+                        Message = message,
+                        Data = null
+                    };
+                }
+
+                // Deserialize successful response
+                var apiResponse =
+                    JsonSerializer.Deserialize<PayxBalanceResponse>(
+                        json,
+                        new JsonSerializerOptions
+                        {
+                            PropertyNameCaseInsensitive = true
+                        });
+
+                if (apiResponse?.Balances == null)
+                {
+                    return new DahabResponse<CheckBalanceData>
+                    {
+                        Success = false,
+                        Message = "Balance information was not found.",
+                        Data = null
+                    };
+                }
+
+                // Find Dollar balance
+                var dollar = apiResponse.Balances
+                    .FirstOrDefault(x =>
+                        string.Equals(
+                            x.Currency,
+                            "dollar",
+                            StringComparison.OrdinalIgnoreCase));
+
+                // Find Shilling balance
+                var shilling = apiResponse.Balances
+                    .FirstOrDefault(x =>
+                        string.Equals(
+                            x.Currency,
+                            "shilling",
+                            StringComparison.OrdinalIgnoreCase));
+
+                var balanceData = new CheckBalanceData
+                {
+                    Dollar = new BalanceResponse
+                    {
+                        Balance = dollar?.Balance ?? 0,
+                        FrBalance = dollar?.FrozenAmount ?? 0,
+                        TxnStatus = "200",
+                        Message = "Success"
+                    },
+
+                    Shl = new BalanceResponse
+                    {
+                        Balance = shilling?.Balance ?? 0,
+                        FrBalance = shilling?.FrozenAmount ?? 0,
+                        TxnStatus = "200",
+                        Message = "Success"
+                    }
+                };
+
+                return new DahabResponse<CheckBalanceData>
+                {
+                    Success = true,
+                    Message = "Balance fetched successfully.",
+                    Data = balanceData
+                };
+            }
+            catch (OperationCanceledException)
+            {
+                _logger.LogWarning(
+                    "Balance request cancelled for {Msisdn}.",
+                    msisdn);
+
+                return new DahabResponse<CheckBalanceData>
+                {
+                    Success = false,
+                    Message = "Request cancelled.",
+                    Data = null
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "Error calling PayX Balance API for {Msisdn}.",
+                    msisdn);
+
+                return new DahabResponse<CheckBalanceData>
+                {
+                    Success = false,
+                    Message = "Cosdigani waa mid khaldan, Fadlan mar kale isku day codsi sax ah",
+                    Data = null
+                };
+            }
+        }
     }
 }

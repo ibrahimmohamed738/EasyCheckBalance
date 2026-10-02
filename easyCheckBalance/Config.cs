@@ -25,5 +25,11 @@ namespace easyCheckBalance
         public string BalanceApiUrl { get; set; }
 
         public ApiAuthConfig ApiAuth { get; set; }
+
+        public string PayxApiUrl { get; set; }
+        public string PayxApiKey { get; set; }
+        public string PayxApiSecret { get; set; }
+
+
     }
 }
